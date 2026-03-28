@@ -1,0 +1,35 @@
+---
+- name: "Partie 1 : Installation et Configuration de la Base de Données"
+  hosts: dbserver
+  become: yes
+  tasks:
+    - name: "1. Installation de MariaDB Server"
+      apt:
+        name: mariadb-server
+        state: present
+        update_cache: yes
+
+    - name: "2. Démarrage du service MariaDB"
+      service:
+        name: mariadb
+        state: started
+        enabled: yes
+
+    - name: "3. Création de la base de données portfolio"
+      mysql_db:
+        name: portfolio_db
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: "4. Configuration de l'écoute sur toutes les interfaces"
+      lineinfile:
+        path: /etc/mysql/mariadb.conf.d/50-server.cnf
+        regexp: '^bind-address'
+        line: 'bind-address = 0.0.0.0'
+      notify: Restart MariaDB
+
+  handlers:
+    - name: Restart MariaDB
+      service:
+        name: mariadb
+        state: restarted
