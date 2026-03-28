@@ -1,0 +1,12 @@
+name: CI/CD Deployment
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Run Ansible Playbook
+        run: |
+          ansible-playbook -i /home/vagrant/ansible/hosts.ini /home/vagrant/ansible/update_web.yml
