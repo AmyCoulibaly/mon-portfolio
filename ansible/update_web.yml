@@ -1,0 +1,38 @@
+---
+- name: "Partie 4 : Déploiement automatique du Portfolio via GitHub"
+  hosts: webserver
+  become: yes
+  tasks:
+    - name: "1. Installation de Nginx et Git sur le serveur"
+      apt:
+        name: 
+          - nginx
+          - git
+        state: present
+        update_cache: yes
+
+    - name: "2. Nettoyage de l'ancien contenu par défaut"
+      file:
+        path: /var/www/html/index.html
+        state: absent
+
+    - name: "3. Récupération du code depuis ton GitHub"
+      ansible.builtin.git:
+        repo: 'https://github.com/AmyCoulibaly/mon-portfolio.git'
+        dest: /var/www/html/repo_temp
+        version: main
+        force: yes
+
+    - name: "4. Déploiement du fichier index.html vers Nginx"
+      copy:
+        src: /var/www/html/repo_temp/index.html
+        dest: /var/www/html/index.html
+        remote_src: yes
+        owner: www-data
+        group: www-data
+        mode: '0644'
+
+    - name: "5. Redémarrage de Nginx pour appliquer les changements"
+      service:
+        name: nginx
+        state: restarted
